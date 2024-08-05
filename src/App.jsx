@@ -1,33 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
 import './App.css';
-import { ThemeContext } from './contexts/ThemeContext.js';
+import { useLocalStorage } from './hooks';
 
 function App() {
-  const [theme, toggleTheme] = useContext(ThemeContext);
-  const [name, setName] = useState('');
-  const [err, setErr] = useState('');
-  useEffect(() => {
-    if (name == '') {
-      setErr('');
-      return;
-    }
-    const id = setTimeout(() => {
-      console.log('checking name length...', name);
-      if (name.trim().length < 3) {
-        setErr('Name must be at least 3 characters long');
-      } else {
-        setErr('');
-      }
-    }, 1000);
-    () => clearTimeout(id);
-  }, [name]);
+  const [storedValue, setValue] = useLocalStorage('a', 10);
   return (
     <>
-      {theme}
-      <button onClick={() => toggleTheme()}>Change</button>
-      <input type="text" onChange={(e) => setName(e.target.value)} />
-      <p>{name}</p>
-      {err && <p>{err}</p>}
+      <button onClick={() => setValue((prev) => prev + 1)}>Increment</button>
+      <p>{storedValue}</p>
     </>
   );
 }
