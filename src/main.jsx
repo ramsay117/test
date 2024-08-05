@@ -2,10 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
-import { ThemeContextProvider } from './components/ThemeContextProvider.jsx';
+import { RouterProvider } from 'react-router-dom';
+import router from './routes.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ThemeContextProvider>
-    <App />
-  </ThemeContextProvider>
+  <RouterProvider router={router} />
 );
