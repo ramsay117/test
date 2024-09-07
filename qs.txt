@@ -1,0 +1,9 @@
+Create a React application that includes a table with five columns, where the table has pagination represented by a progress bar? The application should have the following features:
+
+1. A "Next" button either beside or below the progress bar labeled as "Pagination Progress Bar."
+2. Upon clicking the button:
+   - The progress bar should animate from 0% to 100% over a period of 3 seconds and then return to the current page state.
+   - If the button is clicked multiple times, progress bar animations should queue up, starting only after the previous animation finishes.
+   - Progress bars should appear sequentially, ensuring each bar starts only after the prior bar completes its animation.
+   
+What steps would you take to implement this functionality, and how would you ensure the animations are handled sequentially?
