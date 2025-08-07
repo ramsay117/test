@@ -1,7 +1,6 @@
 import { useReducer } from 'react';
 import reducer from '../reducer';
 import Accordian from '../components/accordian/Accordian';
-import Todo from '../components/to-do/Todo';
 import Countries from '../components/autocomplete/Countries';
 
 function Home() {
@@ -13,9 +12,8 @@ function Home() {
       <p>{state}</p>
       <button onClick={() => dispatch({ type: 'ADD' })}>Add</button>
       <button onClick={() => dispatch({ type: 'SUB' })}>Sub</button>
-      <Accordian />
-      <Todo />
-      <Countries />
+      {/* <Accordian /> */}
+      {/* <Countries /> */}
     </div>
   );
 }
