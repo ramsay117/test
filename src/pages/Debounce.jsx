@@ -1,22 +1,26 @@
 import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 function Debounce() {
   const [pass, setPass] = useState('');
-  const [err, setErr] = useState('');
 
   useEffect(() => {
     const id = setTimeout(() => {
-      if (pass.length > 0 && pass.trim().length <= 3) {
-        setErr('password length must be greater than 3');
-      } else setErr('');
+      const invalid = pass.length > 0 && pass.trim().length <= 3;
+      if (invalid) {
+        const msg = 'Password length must be greater than 3';
+        toast.error(msg, { id: 'pwd-len' });
+      } else {
+        toast.dismiss('pwd-len');
+      }
     }, 1000);
     return () => clearTimeout(id);
   }, [pass]);
 
   return (
     <div>
-      <input type='password' onChange={(e) => setPass(e.target.value)} />
-      {err.length > 0 && <p>{err}</p>}
+      <Input type='password' onChange={(e) => setPass(e.target.value)} />
     </div>
   );
 }
