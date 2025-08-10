@@ -30,7 +30,7 @@ function Pagination() {
         <CardContent>
           <ol>
             {countries.slice(page * 10, (page + 1) * 10).map((country) => (
-              <li key={country.country}>{country.country}</li>
+              <li key={country.name}>{country.name}</li>
             ))}
           </ol>
         </CardContent>

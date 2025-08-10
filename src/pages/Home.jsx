@@ -1,7 +1,5 @@
 import { useReducer } from 'react';
 import reducer from '../reducer';
-import Accordian from '../components/accordian/Accordian';
-import Countries from '../components/autocomplete/Countries';
 import { Button } from '@/components/ui/button';
 
 function Home() {
@@ -17,8 +15,6 @@ function Home() {
       <Button variant='outline' onClick={() => dispatch({ type: 'SUB' })}>
         Sub
       </Button>
-      {/* <Accordian /> */}
-      {/* <Countries /> */}
     </div>
   );
 }
