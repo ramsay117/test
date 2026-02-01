@@ -1,9 +1,10 @@
 class TreeOfSpace {
-  constructor() {
+  constructor(name, parent = null) {
+    this.name = name;
     this.isLocked = false;
     this.lockedBy = null;
     this.children = [];
-    this.parent = null;
+    this.parent = parent;
     this.lockedDescendants = new Set();
   }
 
@@ -64,3 +65,50 @@ class TreeOfSpace {
     return true;
   }
 }
+
+function buildTree(nodeNames, m) {
+  const root = new TreeOfSpace(nodeNames[0], null);
+  const q = [root];
+  let idx = 1;
+  const nodeMap = {};
+  while (q.length > 0) {
+    const parent = q.shift();
+    nodeMap[parent.name] = parent;
+    for (let i = 0; i < m && idx < nodeNames.length; i++) {
+      const child = new TreeOfSpace(nodeNames[idx++], parent);
+      parent.children.push(child);
+      q.push(child);
+    }
+  }
+  return nodeMap;
+}
+
+const fs = require('fs');
+const data = fs.readFileSync(0, 'utf-8').trim().split('\n');
+let idx = 0;
+const n = parseInt(data[idx++]);
+const m = parseInt(data[idx++]);
+const q = parseInt(data[idx++]);
+const nodeNames = [];
+for (let i = 0; i < n; i++) {
+  nodeNames.push(data[idx++]);
+}
+
+const nodeMap = buildTree(nodeNames, m);
+
+for (let i = 0; i < q; i++) {
+  const [op, name, uid] = data[idx++].split(' ');
+  const node = nodeMap[name];
+  switch (op) {
+    case '1':
+      console.log(node.lock(uid));
+      break;
+    case '2':
+      console.log(node.unlock(uid));
+      break;
+    case '3':
+      console.log(node.upgrade(uid));
+      break;
+  }
+}
+
