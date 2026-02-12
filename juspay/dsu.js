@@ -48,3 +48,34 @@ const result = solvePuddleProblem(
 );
 
 console.log(result);
+
+//------------------------------------DFS Approach-------------------------------------
+function solvePuddleProblemDFS(n, drops, queries) {
+  const grid = Array.from({ length: n }, () => Array.from({ length: n }, () => false));
+  for (const [r, c] of drops) grid[r][c] = true;
+  const res = [];
+  for (const [r1, c1, r2, c2] of queries) {
+    if (!grid[r1][c1] || !grid[r2][c2]) {
+      res.push(false);
+      continue;
+    }
+    const visited = Array.from({ length: n }, () => Array.from({ length: n }, () => false));
+    res.push(dfs(r1, c1, r2, c2, n, grid, visited));
+  }
+  return res;
+}
+
+function dfs(r1, c1, r2, c2, n, grid, visited) {
+  if (r1 == r2 && c1 == c2) return true;
+  if (r1 < 0 || r1 == n || c1 < 0 || c1 == n || visited[r1][c1] || !grid[r1][c1]) return false;
+  visited[r1][c1] = true;
+  return dfs(r1 - 1, c1, r2, c2, n, grid, visited) || dfs(r1, c1 + 1, r2, c2, n, grid, visited) || dfs(r1 + 1, c1, r2, c2, n, grid, visited) || dfs(r1, c1 - 1, r2, c2, n, grid, visited);
+}
+
+const res = solvePuddleProblemDFS(
+  4,
+  [[1, 1], [3, 3], [1, 2], [2, 2], [2, 3]],
+  [[1, 1, 3, 3], [0, 0, 1, 1]]
+);
+
+console.log(res);
