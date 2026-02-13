@@ -112,3 +112,150 @@ for (let i = 0; i < q; i++) {
   }
 }
 
+//-----------------------------Per-Node Locks--------------------------------
+
+class NodeLock {
+  constructor() {
+    this.locked = false;
+    this.waiting = [];
+  }
+
+  acquire() {
+    while (this.locked) {
+      // busy
+    }
+    this.locked = true;
+  }
+
+  release() {
+    this.locked = false;
+  }
+}
+
+class TreeOfSpaceThreadSafe {
+  constructor(name, parent = null) {
+    this.name = name;
+    this.isLocked = false;
+    this.lockedBy = null;
+    this.children = [];
+    this.parent = parent;
+    this.lockedDescendants = new Set();
+    this.nodeLock = new NodeLock(); // each node has its OWN lock
+  }
+
+  lock(uid) {
+    this.nodeLock.acquire();
+    if (this.isLocked || this.lockedDescendants.size > 0) {
+      this.nodeLock.release();
+      return false;
+    }
+    const acquiredLocks = [this];
+    let current = this.parent;
+    while (current) {
+      current.nodeLock.acquire();
+      acquiredLocks.push(current);
+      if (current.isLocked) {
+        for (const node of acquiredLocks) {
+          node.nodeLock.release();
+        }
+        return false;
+      }
+      current = current.parent;
+    }
+    this.isLocked = true;
+    this.lockedBy = uid;
+    current = this.parent;
+    while (current) {
+      current.lockedDescendants.add(this);
+      current = current.parent;
+    }
+    for (let i = acquiredLocks.length - 1; i >= 0; i--) {
+      acquiredLocks[i].nodeLock.release();
+    }
+    return true;
+  }
+
+  unlock(uid) {
+    this.nodeLock.acquire();
+    if (!this.isLocked || this.lockedBy != uid) {
+      this.nodeLock.release();
+      return false;
+    }
+    const acquiredLocks = [this];
+    let current = this.parent;
+    while (current) {
+      current.nodeLock.acquire();
+      acquiredLocks.push(current);
+      current = current.parent;
+    }
+    // Write phase
+    this.isLocked = false;
+    this.lockedBy = null;
+    current = this.parent;
+    while (current) {
+      current.lockedDescendants.delete(this);
+      current = current.parent;
+    }
+
+    // Release all locks in reverse
+    for (let i = acquiredLocks.length - 1; i >= 0; i--) {
+      acquiredLocks[i].nodeLock.release();
+    }
+    return true;
+  }
+
+  upgrade(uid) {
+    this.nodeLock.acquire();
+    if (this.isLocked || this.lockedDescendants.size == 0) {
+      this.nodeLock.release();
+      return false;
+    }
+    for (const descendant of this.lockedDescendants) {
+      if (descendant.lockedBy != uid) {
+        this.nodeLock.release();
+        return false
+      }
+    }
+
+    // Acquire ancestor locks
+    const acquiredLocks = [this];
+    let current = this.parent;
+    while (current) {
+      current.nodeLock.acquire();
+      acquiredLocks.push(current);
+      if (current.isLocked) {
+        for (const node of acquiredLocks) {
+          node.nodeLock.release();
+        }
+        return false;
+      }
+      current = current.parent;
+    }
+
+    // Unlock all descendants
+    const toUnlock = [...this.lockedDescendants];
+    for (const descendant of toUnlock) {
+      descendant.isLocked = false;
+      descendant.lockedBy = null;
+      // remove from all ancestors' lockedDescendants
+      let ancestor = descendant.parent;
+      while (ancestor) {
+        ancestor.lockedDescendants.delete(descendant);
+        ancestor = ancestor.parent;
+      }
+    }
+
+    this.isLocked = true;
+    this.lockedBy = uid;
+    current = this.parent;
+    while (current) {
+      current.lockedDescendants.add(this);
+      current = current.parent;
+    }
+
+    for (let i = acquiredLocks.length - 1; i >= 0; i--) {
+      acquiredLocks[i].nodeLock.release();
+    }
+    return true;
+  }
+}
