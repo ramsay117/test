@@ -2,12 +2,15 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { pool, testConnection } from './db.js';
 import { logger } from './logger.js';
+import { urlShortenerRouter } from './url-shortener.js';
+
 
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
+app.use('/api', urlShortenerRouter);
 
 const server = app.listen(process.env.PORT, async () => {
   logger.info('Server is running', { port: process.env.PORT });

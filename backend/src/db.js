@@ -16,7 +16,7 @@ pool.on('error', (err) => {
   logger.error('Unexpected error on idle client', { error: err.message, stack: err.stack });
 });
 
-async function query(text, params) {
+async function execute(text, params) {
   const start = moment.tz('Asia/Kolkata');
   const res = await pool.query(text, params);
   const duration = moment.tz('Asia/Kolkata').diff(start, 'milliseconds');
@@ -24,8 +24,19 @@ async function query(text, params) {
   return res;
 }
 
-async function getClient() {
-  return pool.connect();
+async function withTransaction(callback) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 async function testConnection() {
@@ -33,4 +44,4 @@ async function testConnection() {
   logger.info('Database connected', { time: res.rows[0].now });
 }
 
-export { pool, query, getClient, testConnection };
+export { pool, execute, withTransaction, testConnection };
